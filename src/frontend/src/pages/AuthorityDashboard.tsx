@@ -18,6 +18,7 @@ import {
   Eye,
   FileText,
   Inbox,
+  Plus,
   X,
   XCircle,
 } from "lucide-react";
@@ -27,6 +28,7 @@ import { toast } from "sonner";
 import { type Request, Status } from "../backend.d";
 import { Layout, authorityNavItems } from "../components/Layout";
 import { RemarksDialog } from "../components/RemarksDialog";
+import { RequestForm } from "../components/RequestForm";
 import { PriorityBadge, StatusBadge } from "../components/StatusBadge";
 import {
   useAllPendingRequests,
@@ -65,6 +67,7 @@ export function AuthorityDashboard({ userName }: AuthorityDashboardProps) {
   const [remarksMode, setRemarksMode] = useState<"approve" | "reject">(
     "approve",
   );
+  const [formOpen, setFormOpen] = useState(false);
 
   const { data: pendingRequests = [], isLoading: loadingPending } =
     useAllPendingRequests();
@@ -381,10 +384,19 @@ export function AuthorityDashboard({ userName }: AuthorityDashboardProps) {
 
         {/* Tabs */}
         <Card className="shadow-card border-border">
-          <CardHeader className="pb-0">
+          <CardHeader className="flex flex-row items-center justify-between pb-0">
             <CardTitle className="text-base font-semibold">
               Requests Management
             </CardTitle>
+            <Button
+              data-ocid="authority.new_request_button"
+              onClick={() => setFormOpen(true)}
+              size="sm"
+              className="bg-sidebar hover:bg-sidebar/90 text-sidebar-foreground gap-1.5"
+            >
+              <Plus className="h-4 w-4" />
+              New Request
+            </Button>
           </CardHeader>
           <CardContent className="p-0 pt-4">
             <Tabs defaultValue="pending">
@@ -432,6 +444,12 @@ export function AuthorityDashboard({ userName }: AuthorityDashboardProps) {
           onConfirm={handleConfirm}
         />
       )}
+
+      <RequestForm
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        userName={userName}
+      />
     </Layout>
   );
 }
