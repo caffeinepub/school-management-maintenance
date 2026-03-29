@@ -8,15 +8,15 @@
   :root {
     --radius: 0.5rem;
 
-    /* Navy sidebar */
-    --sidebar: 0.27 0.09 255;
-    --sidebar-foreground: 0.95 0.01 255;
-    --sidebar-primary: 0.65 0.18 210;
-    --sidebar-primary-foreground: 1 0 0;
-    --sidebar-accent: 0.32 0.09 255;
-    --sidebar-accent-foreground: 0.95 0.01 255;
-    --sidebar-border: 0.35 0.07 255;
-    --sidebar-ring: 0.65 0.18 210;
+    /* Light blue sidebar */
+    --sidebar: 0.58 0.1 255;
+    --sidebar-foreground: 1 0 0;
+    --sidebar-primary: 0.75 0.15 210;
+    --sidebar-primary-foreground: 0.2 0.06 255;
+    --sidebar-accent: 0.64 0.1 255;
+    --sidebar-accent-foreground: 1 0 0;
+    --sidebar-border: 0.62 0.08 255;
+    --sidebar-ring: 0.75 0.15 210;
 
     /* Light content area */
     --background: 0.97 0.005 240;
