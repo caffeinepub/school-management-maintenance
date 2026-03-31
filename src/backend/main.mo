@@ -191,6 +191,39 @@ actor {
     userProfiles.add(caller, profile);
   };
 
+  // Returns all user profiles. Only callable by the Caffeine admin.
+  public query ({ caller }) func getAllUserProfiles() : async [(Principal, UserProfile)] {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized");
+    };
+    userProfiles.toArray();
+  };
+
+  // Create or overwrite a user profile. Only callable by the Caffeine admin.
+  public shared ({ caller }) func setUserProfileForPrincipal(user : Principal, profile : UserProfile) : async () {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized");
+    };
+
+    // Save profile for any principal
+    userProfiles.add(user, profile);
+
+    // Auto-register principal in Caffeine Access Control as user (if not already)
+    switch (accessControlState.userRoles.get(user)) {
+      case (null) { accessControlState.userRoles.add(user, #user) };
+      case (?_) {};
+    };
+
+    // Add to app roles regardless (app-level role, not Caffeine access control)
+    let appRole : AppRole = switch (profile.role) {
+      case ("teacher") { #teacher };
+      case ("authority") { #authority };
+      case ("admin") { #admin };
+      case (_) { Runtime.trap("Invalid role: must be teacher, authority, or admin") };
+    };
+    appRoles.add(user, appRole);
+  };
+
   public shared ({ caller }) func submitRequest(input : SubmitRequestInput) : async Nat {
     if (caller.isAnonymous()) { Runtime.trap("Unauthorized: Must be logged in") };
     if (not isTeacher(caller)) { Runtime.trap("Unauthorized: Only teachers can submit requests") };
@@ -438,3 +471,4 @@ actor {
     };
   };
 };
+

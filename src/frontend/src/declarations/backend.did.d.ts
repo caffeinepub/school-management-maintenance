@@ -75,6 +75,7 @@ export interface _SERVICE {
   'getAllApprovedRequests' : ActorMethod<[], Array<Request>>,
   'getAllPendingRequests' : ActorMethod<[], Array<Request>>,
   'getAllRequests' : ActorMethod<[], Array<Request>>,
+  'getAllUserProfiles' : ActorMethod<[], Array<[Principal, UserProfile]>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getMyRequests' : ActorMethod<[], Array<Request>>,
@@ -87,6 +88,10 @@ export interface _SERVICE {
   'markUnableToFulfill' : ActorMethod<[bigint, string], undefined>,
   'rejectRequest' : ActorMethod<[bigint, string], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'setUserProfileForPrincipal' : ActorMethod<
+    [Principal, UserProfile],
+    undefined
+  >,
   'submitRequest' : ActorMethod<[SubmitRequestInput], bigint>,
 }
 export declare const idlService: IDL.ServiceClass;

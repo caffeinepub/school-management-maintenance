@@ -82,6 +82,11 @@ export const idlService = IDL.Service({
   'getAllApprovedRequests' : IDL.Func([], [IDL.Vec(Request)], ['query']),
   'getAllPendingRequests' : IDL.Func([], [IDL.Vec(Request)], ['query']),
   'getAllRequests' : IDL.Func([], [IDL.Vec(Request)], ['query']),
+  'getAllUserProfiles' : IDL.Func(
+      [],
+      [IDL.Vec(IDL.Tuple(IDL.Principal, UserProfile))],
+      ['query'],
+    ),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getMyRequests' : IDL.Func([], [IDL.Vec(Request)], ['query']),
@@ -98,6 +103,7 @@ export const idlService = IDL.Service({
   'markUnableToFulfill' : IDL.Func([IDL.Nat, IDL.Text], [], []),
   'rejectRequest' : IDL.Func([IDL.Nat, IDL.Text], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  'setUserProfileForPrincipal' : IDL.Func([IDL.Principal, UserProfile], [], []),
   'submitRequest' : IDL.Func([SubmitRequestInput], [IDL.Nat], []),
 });
 
@@ -178,6 +184,11 @@ export const idlFactory = ({ IDL }) => {
     'getAllApprovedRequests' : IDL.Func([], [IDL.Vec(Request)], ['query']),
     'getAllPendingRequests' : IDL.Func([], [IDL.Vec(Request)], ['query']),
     'getAllRequests' : IDL.Func([], [IDL.Vec(Request)], ['query']),
+    'getAllUserProfiles' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Tuple(IDL.Principal, UserProfile))],
+        ['query'],
+      ),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getMyRequests' : IDL.Func([], [IDL.Vec(Request)], ['query']),
@@ -194,6 +205,11 @@ export const idlFactory = ({ IDL }) => {
     'markUnableToFulfill' : IDL.Func([IDL.Nat, IDL.Text], [], []),
     'rejectRequest' : IDL.Func([IDL.Nat, IDL.Text], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+    'setUserProfileForPrincipal' : IDL.Func(
+        [IDL.Principal, UserProfile],
+        [],
+        [],
+      ),
     'submitRequest' : IDL.Func([SubmitRequestInput], [IDL.Nat], []),
   });
 };

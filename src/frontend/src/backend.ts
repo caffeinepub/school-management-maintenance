@@ -165,6 +165,7 @@ export interface backendInterface {
     getAllApprovedRequests(): Promise<Array<Request>>;
     getAllPendingRequests(): Promise<Array<Request>>;
     getAllRequests(): Promise<Array<Request>>;
+    getAllUserProfiles(): Promise<Array<[Principal, UserProfile]>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getMyRequests(): Promise<Array<Request>>;
@@ -177,6 +178,7 @@ export interface backendInterface {
     markUnableToFulfill(requestId: bigint, note: string): Promise<void>;
     rejectRequest(requestId: bigint, remarks: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    setUserProfileForPrincipal(user: Principal, profile: UserProfile): Promise<void>;
     submitRequest(input: SubmitRequestInput): Promise<bigint>;
 }
 import type { Category as _Category, Priority as _Priority, Request as _Request, Status as _Status, SubmitRequestInput as _SubmitRequestInput, UserProfile as _UserProfile, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
@@ -264,6 +266,20 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.getAllRequests();
             return from_candid_vec_n3(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getAllUserProfiles(): Promise<Array<[Principal, UserProfile]>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAllUserProfiles();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAllUserProfiles();
+            return result;
         }
     }
     async getCallerUserProfile(): Promise<UserProfile | null> {
@@ -431,6 +447,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.saveCallerUserProfile(arg0);
+            return result;
+        }
+    }
+    async setUserProfileForPrincipal(arg0: Principal, arg1: UserProfile): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.setUserProfileForPrincipal(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.setUserProfileForPrincipal(arg0, arg1);
             return result;
         }
     }

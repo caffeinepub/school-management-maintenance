@@ -1,3 +1,4 @@
+import type { Principal } from "@icp-sdk/core/principal";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   Request,
@@ -194,6 +195,47 @@ export function useMarkUnableToFulfill() {
       qc.invalidateQueries({ queryKey: ["approvedRequests"] });
       qc.invalidateQueries({ queryKey: ["allRequests"] });
       qc.invalidateQueries({ queryKey: ["stats"] });
+    },
+  });
+}
+
+export function useIsAdmin() {
+  const { actor, isFetching } = useActor();
+  return useQuery<boolean>({
+    queryKey: ["isAdmin"],
+    queryFn: async () => {
+      if (!actor) return false;
+      return actor.isCallerAdmin();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useAllUserProfiles() {
+  const { actor, isFetching } = useActor();
+  return useQuery<Array<[Principal, UserProfile]>>({
+    queryKey: ["allUserProfiles"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getAllUserProfiles();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useSetUserProfileForPrincipal() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      user,
+      profile,
+    }: { user: Principal; profile: UserProfile }) => {
+      if (!actor) throw new Error("No actor");
+      return actor.setUserProfileForPrincipal(user, profile);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["allUserProfiles"] });
     },
   });
 }

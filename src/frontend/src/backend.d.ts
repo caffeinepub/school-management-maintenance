@@ -82,6 +82,7 @@ export interface backendInterface {
     getAllApprovedRequests(): Promise<Array<Request>>;
     getAllPendingRequests(): Promise<Array<Request>>;
     getAllRequests(): Promise<Array<Request>>;
+    getAllUserProfiles(): Promise<Array<[Principal, UserProfile]>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getMyRequests(): Promise<Array<Request>>;
@@ -94,5 +95,6 @@ export interface backendInterface {
     markUnableToFulfill(requestId: bigint, note: string): Promise<void>;
     rejectRequest(requestId: bigint, remarks: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    setUserProfileForPrincipal(user: Principal, profile: UserProfile): Promise<void>;
     submitRequest(input: SubmitRequestInput): Promise<bigint>;
 }

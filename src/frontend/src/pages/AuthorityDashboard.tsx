@@ -22,6 +22,7 @@ import {
   X,
   XCircle,
 } from "lucide-react";
+import { Users } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -36,6 +37,7 @@ import {
   useApproveRequest,
   useRejectRequest,
 } from "../hooks/useQueries";
+import { SuperAdminPage } from "./SuperAdminPage";
 
 function formatDate(ts: bigint) {
   return new Date(Number(ts) / 1_000_000).toLocaleDateString("en-IN", {
@@ -58,9 +60,13 @@ function isOverdueForAuthority(req: Request): boolean {
 
 interface AuthorityDashboardProps {
   userName: string;
+  showManageUsers?: boolean;
 }
 
-export function AuthorityDashboard({ userName }: AuthorityDashboardProps) {
+export function AuthorityDashboard({
+  userName,
+  showManageUsers = false,
+}: AuthorityDashboardProps) {
   const [activePage, setActivePage] = useState("dashboard");
   const [remarksOpen, setRemarksOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
@@ -332,108 +338,123 @@ export function AuthorityDashboard({ userName }: AuthorityDashboardProps) {
     <Layout
       activePage={activePage}
       onPageChange={setActivePage}
-      navItems={authorityNavItems()}
+      navItems={
+        showManageUsers
+          ? [
+              ...authorityNavItems(),
+              {
+                label: "Manage Users",
+                icon: <Users className="h-4 w-4" />,
+                id: "manage-users",
+              },
+            ]
+          : authorityNavItems()
+      }
       userName={userName}
       userRole="authority"
     >
-      <div className="space-y-6">
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-          {stats.map((stat, i) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-            >
-              <Card
-                className={`shadow-card border-border relative overflow-hidden ${"overdue" in stat && stat.overdue && !loadingAll && stat.value > 0 ? "ring-2 ring-red-400" : ""}`}
+      {activePage === "manage-users" ? (
+        <SuperAdminPage />
+      ) : (
+        <div className="space-y-6">
+          {/* Stats */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            {stats.map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
               >
-                {"overdue" in stat &&
-                  stat.overdue &&
-                  !loadingAll &&
-                  stat.value > 0 && (
-                    <span className="absolute top-2 right-2 flex h-2.5 w-2.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
-                    </span>
-                  )}
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-10 h-10 rounded-lg flex items-center justify-center ${stat.color}`}
-                    >
-                      {stat.icon}
-                    </div>
-                    <div>
-                      <p
-                        className={`text-2xl font-bold ${"overdue" in stat && stat.overdue && !loadingAll && stat.value > 0 ? "text-red-600" : "text-foreground"}`}
-                      >
-                        {loadingPending || loadingAll ? "—" : stat.value}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {stat.label}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Tabs */}
-        <Card className="shadow-card border-border">
-          <CardHeader className="flex flex-row items-center justify-between pb-0">
-            <CardTitle className="text-base font-semibold">
-              Requests Management
-            </CardTitle>
-            <Button
-              data-ocid="authority.new_request_button"
-              onClick={() => setFormOpen(true)}
-              size="sm"
-              className="bg-sidebar hover:bg-sidebar/90 text-sidebar-foreground gap-1.5"
-            >
-              <Plus className="h-4 w-4" />
-              New Request
-            </Button>
-          </CardHeader>
-          <CardContent className="p-0 pt-4">
-            <Tabs defaultValue="pending">
-              <div className="px-6">
-                <TabsList
-                  data-ocid="authority.tab"
-                  className="grid w-full max-w-xs grid-cols-2"
+                <Card
+                  className={`shadow-card border-border relative overflow-hidden ${"overdue" in stat && stat.overdue && !loadingAll && stat.value > 0 ? "ring-2 ring-red-400" : ""}`}
                 >
-                  <TabsTrigger value="pending">
-                    Pending
-                    {pendingRequests.length > 0 && (
-                      <span className="ml-1.5 bg-amber-500 text-white text-xs rounded-full w-4 h-4 inline-flex items-center justify-center">
-                        {pendingRequests.length}
+                  {"overdue" in stat &&
+                    stat.overdue &&
+                    !loadingAll &&
+                    stat.value > 0 && (
+                      <span className="absolute top-2 right-2 flex h-2.5 w-2.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
                       </span>
                     )}
-                  </TabsTrigger>
-                  <TabsTrigger value="history">History</TabsTrigger>
-                </TabsList>
-              </div>
-              <TabsContent value="pending" className="mt-4">
-                <RequestsTable
-                  requests={pendingRequests}
-                  loading={loadingPending}
-                  emptyOcid="authority.pending.empty_state"
-                />
-              </TabsContent>
-              <TabsContent value="history" className="mt-4">
-                <RequestsTable
-                  requests={reviewedRequests}
-                  loading={loadingAll}
-                  emptyOcid="authority.history.empty_state"
-                />
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-      </div>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-10 h-10 rounded-lg flex items-center justify-center ${stat.color}`}
+                      >
+                        {stat.icon}
+                      </div>
+                      <div>
+                        <p
+                          className={`text-2xl font-bold ${"overdue" in stat && stat.overdue && !loadingAll && stat.value > 0 ? "text-red-600" : "text-foreground"}`}
+                        >
+                          {loadingPending || loadingAll ? "—" : stat.value}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {stat.label}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Tabs */}
+          <Card className="shadow-card border-border">
+            <CardHeader className="flex flex-row items-center justify-between pb-0">
+              <CardTitle className="text-base font-semibold">
+                Requests Management
+              </CardTitle>
+              <Button
+                data-ocid="authority.new_request_button"
+                onClick={() => setFormOpen(true)}
+                size="sm"
+                className="bg-sidebar hover:bg-sidebar/90 text-sidebar-foreground gap-1.5"
+              >
+                <Plus className="h-4 w-4" />
+                New Request
+              </Button>
+            </CardHeader>
+            <CardContent className="p-0 pt-4">
+              <Tabs defaultValue="pending">
+                <div className="px-6">
+                  <TabsList
+                    data-ocid="authority.tab"
+                    className="grid w-full max-w-xs grid-cols-2"
+                  >
+                    <TabsTrigger value="pending">
+                      Pending
+                      {pendingRequests.length > 0 && (
+                        <span className="ml-1.5 bg-amber-500 text-white text-xs rounded-full w-4 h-4 inline-flex items-center justify-center">
+                          {pendingRequests.length}
+                        </span>
+                      )}
+                    </TabsTrigger>
+                    <TabsTrigger value="history">History</TabsTrigger>
+                  </TabsList>
+                </div>
+                <TabsContent value="pending" className="mt-4">
+                  <RequestsTable
+                    requests={pendingRequests}
+                    loading={loadingPending}
+                    emptyOcid="authority.pending.empty_state"
+                  />
+                </TabsContent>
+                <TabsContent value="history" className="mt-4">
+                  <RequestsTable
+                    requests={reviewedRequests}
+                    loading={loadingAll}
+                    emptyOcid="authority.history.empty_state"
+                  />
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {selectedRequest && (
         <RemarksDialog

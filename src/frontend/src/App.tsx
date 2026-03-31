@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/sonner";
 import { GraduationCap } from "lucide-react";
 import { useInternetIdentity } from "./hooks/useInternetIdentity";
-import { useUserProfile } from "./hooks/useQueries";
+import { useIsAdmin, useUserProfile } from "./hooks/useQueries";
 import { AdminDashboard } from "./pages/AdminDashboard";
 import { AuthorityDashboard } from "./pages/AuthorityDashboard";
 import { LoginPage } from "./pages/LoginPage";
@@ -32,6 +32,7 @@ function LoadingScreen() {
 export default function App() {
   const { identity, isInitializing } = useInternetIdentity();
   const { data: profile, isLoading: profileLoading } = useUserProfile();
+  const { data: isAdmin } = useIsAdmin();
 
   if (isInitializing) return <LoadingScreen />;
 
@@ -59,15 +60,28 @@ export default function App() {
     );
   }
 
+  const showManageUsers = !!isAdmin;
+
   return (
     <>
       {profile.role === "teacher" && (
-        <TeacherDashboard userName={profile.name} />
+        <TeacherDashboard
+          userName={profile.name}
+          showManageUsers={showManageUsers}
+        />
       )}
       {profile.role === "authority" && (
-        <AuthorityDashboard userName={profile.name} />
+        <AuthorityDashboard
+          userName={profile.name}
+          showManageUsers={showManageUsers}
+        />
       )}
-      {profile.role === "admin" && <AdminDashboard userName={profile.name} />}
+      {profile.role === "admin" && (
+        <AdminDashboard
+          userName={profile.name}
+          showManageUsers={showManageUsers}
+        />
+      )}
       <Toaster richColors position="top-right" />
     </>
   );

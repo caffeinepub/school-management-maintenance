@@ -29,7 +29,7 @@ export function useActor() {
       try {
         await actor._initializeAccessControlWithSecret(adminToken);
       } catch {
-        // Ignore - already initialized or not needed
+        // Already initialized or not admin, continue
       }
       return actor;
     },
