@@ -442,7 +442,6 @@ export function AdminDashboard({
     if (!pendingUnableId) return;
     const idToProcess = pendingUnableId;
     const noteToSubmit = unableNote;
-    setUnableDialogOpen(false);
     setActionId(idToProcess);
     try {
       await markUnableToFulfill.mutateAsync({
@@ -450,11 +449,13 @@ export function AdminDashboard({
         note: noteToSubmit,
       });
       toast.success("Marked as unable to fulfill — authority notified!");
+      setUnableDialogOpen(false);
+      setPendingUnableId(null);
+      setUnableNote("");
     } catch {
       toast.error("Failed to update request.");
     } finally {
       setActionId(null);
-      setPendingUnableId(null);
     }
   };
 
@@ -599,6 +600,7 @@ export function AdminDashboard({
               data-ocid="admin.unable.cancel_button"
               variant="outline"
               onClick={() => setUnableDialogOpen(false)}
+              disabled={markUnableToFulfill.isPending}
             >
               Cancel
             </Button>
@@ -607,8 +609,16 @@ export function AdminDashboard({
               data-ocid="admin.unable.confirm_button"
               variant="destructive"
               onClick={handleMarkUnableConfirm}
+              disabled={markUnableToFulfill.isPending}
             >
-              Confirm
+              {markUnableToFulfill.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />{" "}
+                  Processing...
+                </>
+              ) : (
+                "Confirm"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
