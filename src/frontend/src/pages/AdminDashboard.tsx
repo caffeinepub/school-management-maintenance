@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { Users } from "lucide-react";
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Status } from "../backend.d";
 import { Layout, adminNavItems } from "../components/Layout";
@@ -354,7 +354,9 @@ export function AdminDashboard({
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [unableDialogOpen, setUnableDialogOpen] = useState(false);
   const [unableNote, setUnableNote] = useState("");
-  const [pendingUnableId, setPendingUnableId] = useState<bigint | null>(null);
+
+  const pendingUnableIdRef = useRef<bigint | null>(null);
+  const unableNoteRef = useRef<string>("");
 
   const { data: approvedRequests = [], isLoading: loadingApproved } =
     useAllApprovedRequests();
@@ -413,8 +415,11 @@ export function AdminDashboard({
     try {
       await markSeen.mutateAsync(id);
       toast.success("Request marked as seen — authority notified!");
-    } catch {
-      toast.error("Failed to update request.");
+    } catch (err) {
+      console.error("markSeen error:", err);
+      toast.error(
+        `Failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
     } finally {
       setActionId(null);
     }
@@ -425,23 +430,28 @@ export function AdminDashboard({
     try {
       await markCompleted.mutateAsync(id);
       toast.success("Request marked as fulfilled — authority notified!");
-    } catch {
-      toast.error("Failed to update request.");
+    } catch (err) {
+      console.error("markCompleted error:", err);
+      toast.error(
+        `Failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
     } finally {
       setActionId(null);
     }
   };
 
   const openUnableDialog = (id: bigint) => {
-    setPendingUnableId(id);
+    pendingUnableIdRef.current = id;
+    unableNoteRef.current = "";
+
     setUnableNote("");
     setUnableDialogOpen(true);
   };
 
   const handleMarkUnableConfirm = async () => {
-    if (!pendingUnableId) return;
-    const idToProcess = pendingUnableId;
-    const noteToSubmit = unableNote;
+    const idToProcess = pendingUnableIdRef.current;
+    const noteToSubmit = unableNoteRef.current;
+    if (!idToProcess) return;
     setActionId(idToProcess);
     try {
       await markUnableToFulfill.mutateAsync({
@@ -450,10 +460,15 @@ export function AdminDashboard({
       });
       toast.success("Marked as unable to fulfill — authority notified!");
       setUnableDialogOpen(false);
-      setPendingUnableId(null);
+
       setUnableNote("");
-    } catch {
-      toast.error("Failed to update request.");
+      pendingUnableIdRef.current = null;
+      unableNoteRef.current = "";
+    } catch (err) {
+      console.error("markUnableToFulfill error:", err);
+      toast.error(
+        `Failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
     } finally {
       setActionId(null);
     }
@@ -587,7 +602,10 @@ export function AdminDashboard({
               data-ocid="admin.unable.textarea"
               placeholder="Describe why this request cannot be fulfilled…"
               value={unableNote}
-              onChange={(e) => setUnableNote(e.target.value)}
+              onChange={(e) => {
+                setUnableNote(e.target.value);
+                unableNoteRef.current = e.target.value;
+              }}
               rows={3}
             />
             <p className="text-xs text-muted-foreground">
